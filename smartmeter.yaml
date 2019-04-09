@@ -20,9 +20,43 @@ ota:
 sensor:
 - platform: custom
   lambda: |-
-    auto my_sensor = new MyCustomSensor();
-    App.register_component(my_sensor);
-    return {my_sensor};
+    auto dsmr_mqtt = new DsmrMqtt();
+    App.register_component(dsmr_mqtt);
+    return {
+      dsmr_mqtt->consumption_low_tarif,
+      dsmr_mqtt->consumption_high_tarif,
+      dsmr_mqtt->production_low_tarif,
+      dsmr_mqtt->production_high_tarif,
+      dsmr_mqtt->actual_consumption,
+      dsmr_mqtt->instant_power_usage,
+      dsmr_mqtt->instant_power_current,
+      dsmr_mqtt->gas_meter_m3,
+      dsmr_mqtt->actual_tarif_group,
+      dsmr_mqtt->short_power_outages,
+      dsmr_mqtt->long_power_outages,
+      dsmr_mqtt->short_power_drops,
+      dsmr_mqtt->short_power_peaks
+    };
 
   sensors:
-    name: "My Custom Sensor"
+    - name: Power consumption low
+      unit_of_measurement: kWh
+    - name: Power consumption normal
+      unit_of_measurement: kWh
+    - name: Power production low
+      unit_of_measurement: kWh
+    - name: Power production normal
+      unit_of_measurement: kWh
+    - name: Actual consumption
+      unit_of_measurement: kWh
+    - name: Instant power usage
+      unit_of_measurement: kWh
+    - name: Instant power current
+      unit_of_measurement: kWh
+    - name: Gas consumption
+      unit_of_measurement: m3
+    - name: Tarif group
+    - name: Short power outages
+    - name: Long power outages
+    - name: Short power drops
+    - name: Short power peaks
