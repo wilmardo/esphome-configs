@@ -1,0 +1,22 @@
+esphome:
+  name: baecon
+  platform: ESP32
+  board: DOIT ESP32 DEVKIT V1
+
+wifi:
+  ssid: "B3 Sm4rt"
+  password: "test"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: 'test'
+
+ota:
+  password: 'test'
+
+esp32_ble_beacon:
+  type: iBeacon
+  uuid: '55add50c-db10-4cc5-bc81-5635a379686f'
