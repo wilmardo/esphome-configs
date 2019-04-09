@@ -1,11 +1,7 @@
-esphome:
-  name: kitchen_light
-  platform: ESP8266
-  board: d1
-
+---
 wifi:
   ssid: B3 Sm4rt
-  # password: "test"
+  # password: test
 
 # Enable logging
 logger:
@@ -16,6 +12,11 @@ api:
 
 ota:
   password: test
+
+esphome:
+  name: kitchen_light
+  platform: ESP8266
+  board: d1
 
 binary_sensor:
   - platform: gpio
