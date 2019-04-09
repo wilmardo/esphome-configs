@@ -1,11 +1,7 @@
-esphome:
-  name: smartmeter
-  platform: ESP8266
-  board: d1
-
+---
 wifi:
   ssid: B3 Sm4rt
-  password: test
+  # password: test
 
 # Enable logging
 logger:
@@ -16,6 +12,13 @@ api:
 
 ota:
   password: test
+
+esphome:
+  name: smartmeter
+  platform: ESP8266
+  board: d1
+  includes:
+    - custom-components/dsmr_mqtt.h
 
 sensor:
   - platform: custom
@@ -59,9 +62,9 @@ sensor:
       - name: Long power outages
       - name: Short power drops
       - name: Short power peaks
-    on_value:
-      then:
-        - switch.toggle: led
+    # on_value:
+    #   then:
+    #     - switch.toggle: led
 
 switch:
   - platform: gpio
