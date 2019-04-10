@@ -62,9 +62,6 @@ sensor:
       - name: Long power outages
       - name: Short power drops
       - name: Short power peaks
-    # on_value:
-    #   then:
-    #     - switch.toggle: led
 
 switch:
   - platform: gpio

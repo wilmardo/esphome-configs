@@ -1,0 +1,36 @@
+---
+wifi:
+  ssid: B3 Sm4rt
+  # password: test
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: test
+
+ota:
+  password: test
+
+esphome:
+  name: watermeter
+  platform: ESP8266
+  board: d1
+
+sensor:
+  - platform: pulse_counter
+    pin: D1
+    name: Water Meter
+    unit_of_measurement: m3
+    internal_filter: 10us
+    filters:
+      - multiply: 0.006  # 10000/min = 1m3
+    on_value:
+      then:
+        - switch.toggle: led
+
+switch:
+  - platform: gpio
+    pin: D5
+    id: led
