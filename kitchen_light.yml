@@ -16,7 +16,7 @@ ota:
 esphome:
   name: kitchen_light
   platform: ESP8266
-  board: d1
+  board: esp01_1m
 
 binary_sensor:
   - platform: gpio
