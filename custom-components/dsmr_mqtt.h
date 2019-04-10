@@ -1,6 +1,9 @@
 #include "esphome.h"
 using namespace esphome;
 
+// * Max telegram length
+#define P1_MAXLINELENGTH 64
+
 class DsmrMqtt : public PollingComponent
 {
 public:
@@ -18,6 +21,30 @@ public:
   sensor::Sensor *short_power_drops = new sensor::Sensor();
   sensor::Sensor *short_power_peaks = new sensor::Sensor();
 
+  // * Set to store received telegram
+  char telegram[P1_MAXLINELENGTH];
+
+  // * Set to store the data values read
+  long CONSUMPTION_LOW_TARIF;
+  long CONSUMPTION_HIGH_TARIF;
+  long PRODUCTION_LOW_TARIF;
+  long PRODUCTION_HIGH_TARIF;
+  long ACTUAL_CONSUMPTION;
+  long INSTANT_POWER_CURRENT;
+  long INSTANT_POWER_USAGE;
+  long GAS_METER_M3;
+
+  // Set to store data counters read
+  long ACTUAL_TARIF;
+  long SHORT_POWER_OUTAGES;
+  long LONG_POWER_OUTAGES;
+  long SHORT_POWER_DROPS;
+  long SHORT_POWER_PEAKS;
+
+  // * Set during CRC checking
+  bool VALID_CRC_FOUND = false;
+  unsigned int currentCRC = 0;
+
   DsmrMqtt() : PollingComponent(5000) {}
 
   void setup() override
@@ -28,25 +55,41 @@ public:
 
   void loop() override
   {
-    readSerial();
+    if (Serial.available())
+    {
+      memset(telegram, 0, sizeof(telegram));
+
+      while (Serial.available())
+      {
+        int len = Serial.readBytesUntil('\n', telegram, P1_MAXLINELENGTH);
+        telegram[len] = '\n';
+        telegram[len + 1] = 0;
+        yield();
+
+        decodeTelegram(len + 1);
+      }
+    }
   }
 
   void update() override
   {
-    consumption_low_tarif->publish_state(CONSUMPTION_LOW_TARIF);
-    consumption_high_tarif->publish_state(CONSUMPTION_HIGH_TARIF);
-    production_low_tarif->publish_state(PRODUCTION_LOW_TARIF);
-    production_high_tarif->publish_state(PRODUCTION_HIGH_TARIF);
-    actual_consumption->publish_state(ACTUAL_CONSUMPTION);
-    instant_power_usage->publish_state(INSTANT_POWER_USAGE);
-    instant_power_current->publish_state(INSTANT_POWER_CURRENT);
-    gas_meter_m3->publish_state(GAS_METER_M3);
+    if (VALID_CRC_FOUND)
+    {
+      consumption_low_tarif->publish_state(CONSUMPTION_LOW_TARIF);
+      consumption_high_tarif->publish_state(CONSUMPTION_HIGH_TARIF);
+      production_low_tarif->publish_state(PRODUCTION_LOW_TARIF);
+      production_high_tarif->publish_state(PRODUCTION_HIGH_TARIF);
+      actual_consumption->publish_state(ACTUAL_CONSUMPTION);
+      instant_power_usage->publish_state(INSTANT_POWER_USAGE);
+      instant_power_current->publish_state(INSTANT_POWER_CURRENT);
+      gas_meter_m3->publish_state(GAS_METER_M3);
 
-    actual_tarif_group->publish_state(ACTUAL_TARIF);
-    short_power_outages->publish_state(SHORT_POWER_OUTAGES);
-    long_power_outages->publish_state(LONG_POWER_OUTAGES);
-    short_power_drops->publish_state(SHORT_POWER_DROPS);
-    short_power_peaks->publish_state(SHORT_POWER_PEAKS);
+      actual_tarif_group->publish_state(ACTUAL_TARIF);
+      short_power_outages->publish_state(SHORT_POWER_OUTAGES);
+      long_power_outages->publish_state(LONG_POWER_OUTAGES);
+      short_power_drops->publish_state(SHORT_POWER_DROPS);
+      short_power_peaks->publish_state(SHORT_POWER_PEAKS);
+    }
   }
 
   unsigned int CRC16(unsigned int crc, unsigned char *buf, int len)
@@ -118,11 +161,10 @@ public:
     return 0;
   }
 
-  bool decodeTelegram(int len)
+  void decodeTelegram(int len)
   {
     int startChar = findCharInArrayRev(telegram, '/', len);
     int endChar = findCharInArrayRev(telegram, '!', len);
-    bool validCRCFound = false;
 
     if (startChar >= 0)
     {
@@ -138,9 +180,9 @@ public:
       strncpy(messageCRC, telegram + endChar + 1, 4);
 
       messageCRC[4] = 0; // * Thanks to HarmOtten (issue 5)
-      validCRCFound = (strtol(messageCRC, NULL, 16) == currentCRC);
+      VALID_CRC_FOUND = (strtol(messageCRC, NULL, 16) == currentCRC);
 
-      if (validCRCFound)
+      if (VALID_CRC_FOUND)
         ESP_LOGD("dsmr_mqtt", "CRC Valid!");
       else
         ESP_LOGD("dsmr_mqtt", "CRC Invalid!");
@@ -242,28 +284,6 @@ public:
     if (strncmp(telegram, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
     {
       SHORT_POWER_PEAKS = getValue(telegram, len, '(', ')');
-    }
-
-    return validCRCFound;
-  }
-
-  void readSerial()
-  {
-    if (Serial.available())
-    {
-      memset(telegram, 0, sizeof(telegram));
-
-      while (Serial.available())
-      {
-        int len = Serial.readBytesUntil('\n', telegram, P1_MAXLINELENGTH);
-        telegram[len] = '\n';
-        telegram[len + 1] = 0;
-        yield();
-
-        bool result = decodeTelegram(len + 1);
-        if (result)
-          send_data_to_broker();
-      }
     }
   }
 };
