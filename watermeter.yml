@@ -1,17 +1,17 @@
 ---
 wifi:
-  ssid: B3 Sm4rt
-  # password: test
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
 # Enable logging
 logger:
 
 # Enable Home Assistant API
 api:
-  password: test
+  password: !secret api_password
 
 ota:
-  password: test
+  password: !secret ota_password
 
 esphome:
   name: watermeter
