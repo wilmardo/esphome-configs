@@ -18,6 +18,23 @@ esphome:
   platform: ESP8266
   board: d1
 
-remote_receiver:
-  pin: D0
-  dump: all
+# Receive codes
+# remote_receiver:
+#   pin: 
+#     number: D6
+#     inverted: True
+#   dump: all
+
+switch:
+  - platform: template
+    name: TV Power Button
+    turn_on_action:
+      - remote_transmitter.transmit_samsung:
+          data: 0xE0E040BF
+
+switch:
+  - platform: template
+    name: TV Source Button
+    turn_on_action:
+      - remote_transmitter.transmit_samsung:
+          data: 0xE0E0807F
