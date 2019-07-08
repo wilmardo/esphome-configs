@@ -1,0 +1,23 @@
+---
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password
+
+ota:
+  password: !secret ota_password
+
+esphome:
+  name: tv_remote
+  platform: ESP8266
+  board: d1
+
+remote_receiver:
+  pin: D0
+  dump: all
