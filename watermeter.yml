@@ -6,9 +6,11 @@ wifi:
 # Enable logging
 logger:
 
-# Enable Home Assistant API
-api:
-  password: !secret api_password
+# Enable MQTT
+mqtt:
+  broker: !secret mqtt_broker
+  username: !secret mqtt_username
+  password: !secret mqtt_username
 
 ota:
   password: !secret ota_password
