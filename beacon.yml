@@ -9,8 +9,9 @@ logger:
 # Enable MQTT
 mqtt:
   broker: !secret mqtt_broker
+  port: !secret mqtt_port
   username: !secret mqtt_username
-  password: !secret mqtt_username
+  password: !secret mqtt_password
 
 ota:
   password: !secret ota_password
