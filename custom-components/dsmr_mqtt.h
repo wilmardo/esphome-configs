@@ -2,7 +2,7 @@
 using namespace esphome;
 
 // * Max TELEGRAM length
-#define P1_MAXLINELENGTH 64
+#define P1_MAXLINELENGTH 128
 
 class DsmrMqtt : public PollingComponent
 {
@@ -11,7 +11,8 @@ public:
   sensor::Sensor *consumption_high_tarif = new sensor::Sensor();
   sensor::Sensor *production_low_tarif = new sensor::Sensor();
   sensor::Sensor *production_high_tarif = new sensor::Sensor();
-  sensor::Sensor *actual_consumption = new sensor::Sensor();
+  sensor::Sensor *power_delivered = new sensor::Sensor();
+  sensor::Sensor *power_received = new sensor::Sensor();
   sensor::Sensor *instant_power_usage = new sensor::Sensor();
   sensor::Sensor *instant_power_current = new sensor::Sensor();
   sensor::Sensor *gas_meter_m3 = new sensor::Sensor();
@@ -29,7 +30,8 @@ public:
   long CONSUMPTION_HIGH_TARIF;
   long PRODUCTION_LOW_TARIF;
   long PRODUCTION_HIGH_TARIF;
-  long ACTUAL_CONSUMPTION;
+  long POWER_DELIVERED;
+  long POWER_RECEIVED;
   long INSTANT_POWER_CURRENT;
   long INSTANT_POWER_USAGE;
   long GAS_METER_M3;
@@ -66,7 +68,7 @@ public:
         TELEGRAM[len + 1] = 0;
         yield();
 
-        decodeTELEGRAM(len + 1);
+        decodeTelegram(len + 1);
       }
     }
   }
@@ -79,7 +81,8 @@ public:
       consumption_high_tarif->publish_state(CONSUMPTION_HIGH_TARIF);
       production_low_tarif->publish_state(PRODUCTION_LOW_TARIF);
       production_high_tarif->publish_state(PRODUCTION_HIGH_TARIF);
-      actual_consumption->publish_state(ACTUAL_CONSUMPTION);
+      power_delivered->publish_state(POWER_DELIVERED);
+      power_received->publish_state(POWER_RECEIVED);
       instant_power_usage->publish_state(INSTANT_POWER_USAGE);
       instant_power_current->publish_state(INSTANT_POWER_CURRENT);
       gas_meter_m3->publish_state(GAS_METER_M3);
@@ -161,13 +164,12 @@ public:
     return 0;
   }
 
-  void decodeTELEGRAM(int len)
+  void decodeTelegram(int len)
   {
     int startChar = findCharInArrayRev(TELEGRAM, '/', len);
     int endChar = findCharInArrayRev(TELEGRAM, '!', len);
 
-    ESP_LOGD("dsmr_mqtt", "TELEGRAM received");
-    ESP_LOGD("dsmr_mqtt", TELEGRAM);
+    ESP_LOGD("dsmr_mqtt", "TELEGRAM received: %s", TELEGRAM);
 
     if (startChar >= 0)
     {
@@ -197,96 +199,104 @@ public:
       currentCRC = CRC16(currentCRC, (unsigned char *)TELEGRAM, len);
     }
 
+    // For the spec see: https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_a727fce1f1.pdf
+
     // 1-0:1.8.1(000992.992*kWh)
-    // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
+    // 1-0:1.8.1 = Meter Reading electricity deliveredto client (Tariff1) in 0,001 kWh
     if (strncmp(TELEGRAM, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
     {
       CONSUMPTION_LOW_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:1.8.2(000560.157*kWh)
-    // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
+    // 1-0:1.8.2 = Meter Reading electricity deliveredto client (Tariff 2) in 0,001 kWh
     if (strncmp(TELEGRAM, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
     {
       CONSUMPTION_HIGH_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:2.8.1(000348.890*kWh)
-    // 1-0:2.8.1 = Elektra opbrengst laag tarief (DSMR v4.0)
+    // 1-0:2.8.1 = Meter Reading electricity deliveredby client (Tariff1) in 0,001 kWh
     if (strncmp(TELEGRAM, "1-0:2.8.1", strlen("1-0:2.8.1")) == 0)
     {
       PRODUCTION_LOW_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:2.8.2(000859.885*kWh)
-    // 1-0:2.8.2 = Elektra opbrengst hoog tarief (DSMR v4.0)
+    // 1-0:2.8.2 = Meter Reading electricity deliveredby client (Tariff2) in 0,001 kWh
     if (strncmp(TELEGRAM, "1-0:2.8.2", strlen("1-0:2.8.2")) == 0)
     {
       PRODUCTION_HIGH_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
-    // 1-0:1.7.0(00.424*kW) Actueel verbruik
-    // 1-0:2.7.0(00.000*kW) Actuele teruglevering
-    // 1-0:1.7.x = Electricity consumption actual usage (DSMR v4.0)
-    if (strncmp(TELEGRAM, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
-    {
-      ACTUAL_CONSUMPTION = getValue(TELEGRAM, len, '(', '*');
-    }
-
-    // 1-0:21.7.0(00.378*kW)
-    // 1-0:21.7.0 = Instantaan vermogen Elektriciteit levering
-    if (strncmp(TELEGRAM, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
-    {
-      INSTANT_POWER_USAGE = getValue(TELEGRAM, len, '(', '*');
-    }
-
-    // 1-0:31.7.0(002*A)
-    // 1-0:31.7.0 = Instantane stroom Elektriciteit
-    if (strncmp(TELEGRAM, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
-    {
-      INSTANT_POWER_CURRENT = getValue(TELEGRAM, len, '(', '*');
-    }
-
-    // 0-1:24.2.1(150531200000S)(00811.923*m3)
-    // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
-    if (strncmp(TELEGRAM, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
-    {
-      GAS_METER_M3 = getValue(TELEGRAM, len, '(', '*');
-    }
-
     // 0-0:96.14.0(0001)
-    // 0-0:96.14.0 = Actual Tarif
+    // 0-0:96.14.0 = Tariff indicator electricity.
     if (strncmp(TELEGRAM, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
     {
       ACTUAL_TARIF = getValue(TELEGRAM, len, '(', ')');
     }
 
+    // 1-0:1.7.0(00.424*kW)
+    // 1-0:1.7.0 = Actual electricity powerdelivered (+P)in 1 Wattreso-lution
+    if (strncmp(TELEGRAM, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
+    {
+      POWER_DELIVERED = getValue(TELEGRAM, len, '(', '*');
+    }
+
+    // 1-0:2.7.0(00.000*kW)
+    // Actual electricity power received (-P) in 1 Wattresolution
+    if (strncmp(TELEGRAM, "1-0:2.7.0", strlen("1-0:2.7.0")) == 0)
+    {
+      POWER_RECEIVED = getValue(TELEGRAM, len, '(', '*');
+    }
+
     // 0-0:96.7.21(00003)
-    // 0-0:96.7.21 = Aantal onderbrekingen Elektriciteit
+    // 0-0:96.7.21 = Number of power failures in any phase
     if (strncmp(TELEGRAM, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
     {
       SHORT_POWER_OUTAGES = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 0-0:96.7.9(00001)
-    // 0-0:96.7.9 = Aantal lange onderbrekingen Elektriciteit
+    // 0-0:96.7.9 = Number of long power failures in any phase
     if (strncmp(TELEGRAM, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
     {
       LONG_POWER_OUTAGES = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 1-0:32.32.0(00000)
-    // 1-0:32.32.0 = Aantal korte spanningsdalingen Elektriciteit in fase 1
+    // 1-0:32.32.0 = Number of voltage sags in phase L1
     if (strncmp(TELEGRAM, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
     {
       SHORT_POWER_DROPS = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 1-0:32.36.0(00000)
-    // 1-0:32.36.0 = Aantal korte spanningsstijgingen Elektriciteit in fase 1
+    // 1-0:32.36.0 = Number of voltage swells in phase L1
     if (strncmp(TELEGRAM, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
     {
       SHORT_POWER_PEAKS = getValue(TELEGRAM, len, '(', ')');
+    }
+
+    // 1-0:31.7.0(002*A)
+    // 1-0:31.7.0 = Instantaneous current L1 in A resolu-tion.
+    if (strncmp(TELEGRAM, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
+    {
+      INSTANT_POWER_CURRENT = getValue(TELEGRAM, len, '(', '*');
+    }
+
+    // 1-0:21.7.0(00.378*kW)
+    // 1-0:21.7.0 = Instantaneous active power L1 (+P) in W resolution
+    if (strncmp(TELEGRAM, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
+    {
+      INSTANT_POWER_USAGE = getValue(TELEGRAM, len, '(', '*');
+    }
+
+    // 0-1:24.2.1(190811180000S)(01916.969*m3)
+    // 0-1:24.2.1 = Last 5-minute Meter reading in 0,001 m3 and capture time
+    if (strncmp(TELEGRAM, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
+    {
+      GAS_METER_M3 = getValue(TELEGRAM, len, '(', '*');
     }
   }
 };
