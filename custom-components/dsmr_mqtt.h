@@ -1,7 +1,7 @@
 #include "esphome.h"
 using namespace esphome;
 
-// * Max telegram length
+// * Max TELEGRAM length
 #define P1_MAXLINELENGTH 64
 
 class DsmrMqtt : public PollingComponent
@@ -21,8 +21,8 @@ public:
   sensor::Sensor *short_power_drops = new sensor::Sensor();
   sensor::Sensor *short_power_peaks = new sensor::Sensor();
 
-  // * Set to store received telegram
-  char telegram[P1_MAXLINELENGTH];
+  // * Set to store received TELEGRAM
+  char TELEGRAM[P1_MAXLINELENGTH];
 
   // * Set to store the data values read
   long CONSUMPTION_LOW_TARIF;
@@ -57,16 +57,16 @@ public:
   {
     if (Serial.available())
     {
-      memset(telegram, 0, sizeof(telegram));
+      memset(TELEGRAM, 0, sizeof(TELEGRAM));
 
       while (Serial.available())
       {
-        int len = Serial.readBytesUntil('\n', telegram, P1_MAXLINELENGTH);
-        telegram[len] = '\n';
-        telegram[len + 1] = 0;
+        int len = Serial.readBytesUntil('\n', TELEGRAM, P1_MAXLINELENGTH);
+        TELEGRAM[len] = '\n';
+        TELEGRAM[len + 1] = 0;
         yield();
 
-        decodeTelegram(len + 1);
+        decodeTELEGRAM(len + 1);
       }
     }
   }
@@ -161,23 +161,26 @@ public:
     return 0;
   }
 
-  void decodeTelegram(int len)
+  void decodeTELEGRAM(int len)
   {
-    int startChar = findCharInArrayRev(telegram, '/', len);
-    int endChar = findCharInArrayRev(telegram, '!', len);
+    int startChar = findCharInArrayRev(TELEGRAM, '/', len);
+    int endChar = findCharInArrayRev(TELEGRAM, '!', len);
+
+    ESP_LOGD("dsmr_mqtt", "TELEGRAM received");
+    ESP_LOGD("dsmr_mqtt", TELEGRAM);
 
     if (startChar >= 0)
     {
       // * Start found. Reset CRC calculation
-      currentCRC = CRC16(0x0000, (unsigned char *)telegram + startChar, len - startChar);
+      currentCRC = CRC16(0x0000, (unsigned char *)TELEGRAM + startChar, len - startChar);
     }
     else if (endChar >= 0)
     {
       // * Add to crc calc
-      currentCRC = CRC16(currentCRC, (unsigned char *)telegram + endChar, 1);
+      currentCRC = CRC16(currentCRC, (unsigned char *)TELEGRAM + endChar, 1);
 
       char messageCRC[5];
-      strncpy(messageCRC, telegram + endChar + 1, 4);
+      strncpy(messageCRC, TELEGRAM + endChar + 1, 4);
 
       messageCRC[4] = 0; // * Thanks to HarmOtten (issue 5)
       VALID_CRC_FOUND = (strtol(messageCRC, NULL, 16) == currentCRC);
@@ -191,99 +194,99 @@ public:
     }
     else
     {
-      currentCRC = CRC16(currentCRC, (unsigned char *)telegram, len);
+      currentCRC = CRC16(currentCRC, (unsigned char *)TELEGRAM, len);
     }
 
     // 1-0:1.8.1(000992.992*kWh)
     // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
+    if (strncmp(TELEGRAM, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
     {
-      CONSUMPTION_LOW_TARIF = getValue(telegram, len, '(', '*');
+      CONSUMPTION_LOW_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:1.8.2(000560.157*kWh)
     // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
+    if (strncmp(TELEGRAM, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
     {
-      CONSUMPTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
+      CONSUMPTION_HIGH_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:2.8.1(000348.890*kWh)
     // 1-0:2.8.1 = Elektra opbrengst laag tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:2.8.1", strlen("1-0:2.8.1")) == 0)
+    if (strncmp(TELEGRAM, "1-0:2.8.1", strlen("1-0:2.8.1")) == 0)
     {
-      PRODUCTION_LOW_TARIF = getValue(telegram, len, '(', '*');
+      PRODUCTION_LOW_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:2.8.2(000859.885*kWh)
     // 1-0:2.8.2 = Elektra opbrengst hoog tarief (DSMR v4.0)
-    if (strncmp(telegram, "1-0:2.8.2", strlen("1-0:2.8.2")) == 0)
+    if (strncmp(TELEGRAM, "1-0:2.8.2", strlen("1-0:2.8.2")) == 0)
     {
-      PRODUCTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
+      PRODUCTION_HIGH_TARIF = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:1.7.0(00.424*kW) Actueel verbruik
     // 1-0:2.7.0(00.000*kW) Actuele teruglevering
     // 1-0:1.7.x = Electricity consumption actual usage (DSMR v4.0)
-    if (strncmp(telegram, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
+    if (strncmp(TELEGRAM, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
     {
-      ACTUAL_CONSUMPTION = getValue(telegram, len, '(', '*');
+      ACTUAL_CONSUMPTION = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:21.7.0(00.378*kW)
     // 1-0:21.7.0 = Instantaan vermogen Elektriciteit levering
-    if (strncmp(telegram, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
+    if (strncmp(TELEGRAM, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
     {
-      INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
+      INSTANT_POWER_USAGE = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 1-0:31.7.0(002*A)
     // 1-0:31.7.0 = Instantane stroom Elektriciteit
-    if (strncmp(telegram, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
+    if (strncmp(TELEGRAM, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
     {
-      INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
+      INSTANT_POWER_CURRENT = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 0-1:24.2.1(150531200000S)(00811.923*m3)
     // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
-    if (strncmp(telegram, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
+    if (strncmp(TELEGRAM, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
     {
-      GAS_METER_M3 = getValue(telegram, len, '(', '*');
+      GAS_METER_M3 = getValue(TELEGRAM, len, '(', '*');
     }
 
     // 0-0:96.14.0(0001)
     // 0-0:96.14.0 = Actual Tarif
-    if (strncmp(telegram, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
+    if (strncmp(TELEGRAM, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
     {
-      ACTUAL_TARIF = getValue(telegram, len, '(', ')');
+      ACTUAL_TARIF = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 0-0:96.7.21(00003)
     // 0-0:96.7.21 = Aantal onderbrekingen Elektriciteit
-    if (strncmp(telegram, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
+    if (strncmp(TELEGRAM, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
     {
-      SHORT_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+      SHORT_POWER_OUTAGES = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 0-0:96.7.9(00001)
     // 0-0:96.7.9 = Aantal lange onderbrekingen Elektriciteit
-    if (strncmp(telegram, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
+    if (strncmp(TELEGRAM, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
     {
-      LONG_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+      LONG_POWER_OUTAGES = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 1-0:32.32.0(00000)
     // 1-0:32.32.0 = Aantal korte spanningsdalingen Elektriciteit in fase 1
-    if (strncmp(telegram, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
+    if (strncmp(TELEGRAM, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
     {
-      SHORT_POWER_DROPS = getValue(telegram, len, '(', ')');
+      SHORT_POWER_DROPS = getValue(TELEGRAM, len, '(', ')');
     }
 
     // 1-0:32.36.0(00000)
     // 1-0:32.36.0 = Aantal korte spanningsstijgingen Elektriciteit in fase 1
-    if (strncmp(telegram, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
+    if (strncmp(TELEGRAM, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
     {
-      SHORT_POWER_PEAKS = getValue(telegram, len, '(', ')');
+      SHORT_POWER_PEAKS = getValue(TELEGRAM, len, '(', ')');
     }
   }
 };
