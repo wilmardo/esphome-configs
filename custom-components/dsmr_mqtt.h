@@ -169,7 +169,7 @@ public:
     int startChar = findCharInArrayRev(TELEGRAM, '/', len);
     int endChar = findCharInArrayRev(TELEGRAM, '!', len);
 
-    ESP_LOGD("dsmr_mqtt", "TELEGRAM received: %s", TELEGRAM);
+    ESP_LOGV("dsmr_mqtt", "TELEGRAM received: %s", TELEGRAM);
 
     if (startChar >= 0)
     {
@@ -188,9 +188,9 @@ public:
       VALID_CRC_FOUND = (strtol(messageCRC, NULL, 16) == currentCRC);
 
       if (VALID_CRC_FOUND)
-        ESP_LOGD("dsmr_mqtt", "CRC Valid!");
+        ESP_LOGI("dsmr_mqtt", "CRC Valid!");
       else
-        ESP_LOGD("dsmr_mqtt", "CRC Invalid!");
+        ESP_LOGE("dsmr_mqtt", "CRC Invalid!");
 
       currentCRC = 0;
     }
