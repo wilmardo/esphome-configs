@@ -199,7 +199,7 @@ public:
       currentCRC = CRC16(currentCRC, (unsigned char *)TELEGRAM, len);
     }
 
-    // For the spec see: https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_a727fce1f1.pdf
+    // For the spec see p26: https://www.netbeheernederland.nl/_upload/Files/Slimme_meter_15_a727fce1f1.pdf
 
     // 1-0:1.8.1(000992.992*kWh)
     // 1-0:1.8.1 = Meter Reading electricity deliveredto client (Tariff1) in 0,001 kWh

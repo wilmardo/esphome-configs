@@ -32,6 +32,11 @@ esphome:
 #     inverted: True
 #   dump: all
 
+remote_transmitter:
+  pin:
+    number: D8
+  carrier_duty_percent: 50%
+
 switch:
   - platform: template
     name: TV Power Button
@@ -39,7 +44,6 @@ switch:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
 
-switch:
   - platform: template
     name: TV Source Button
     turn_on_action:

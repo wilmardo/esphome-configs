@@ -51,20 +51,28 @@ sensor:
     sensors:
       - name: Power consumption low
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Power consumption normal
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Power production low
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Power production normal
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Actual consumption
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Instant power usage
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Instant power current
         unit_of_measurement: kWh
+        accuracy_decimals: 3
       - name: Gas consumption
         unit_of_measurement: m3
+        accuracy_decimals: 3
       - name: Tarif group
       - name: Short power outages
       - name: Long power outages
