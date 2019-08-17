@@ -23,30 +23,34 @@ ota:
 esphome:
   name: bedroom_blind
   platform: ESP8266
-  board: nodemcu
+  board: d1
 
 stepper:
 - platform: uln2003
   id: bedroom_blind
-  pin_a: D0
-  pin_b: D1
-  pin_c: D2
-  pin_d: D3
-  max_speed: 100 steps/s
-
+  # NOTE: Does not seem to work on other ports
+  pin_a: D8
+  pin_b: D7
+  pin_c: D6
+  pin_d: D5
+  max_speed: 1000 steps/s
   acceleration: 10
   deceleration: 10
+  sleep_when_done: true
 
 cover:
 - platform: template
   device_class: blind
   name: "Bedroom Blind"
-  assumed_state: true
   open_action:
-  - stepper.set_target:
-      id: bedroom_blind
-      target: 0
+    - stepper.set_target:
+        id: bedroom_blind
+        target: 0
   close_action:
-  - stepper.set_target:
-      id: bedroom_blind
-      target: 250
+    - stepper.set_target:
+        id: bedroom_blind
+        target: 25000
+  stop_action:
+    - stepper.set_target:
+        id: bedroom_blind
+        target: !lambda return id(bedroom_blind).current_position;
