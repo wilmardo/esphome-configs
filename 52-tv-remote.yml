@@ -34,18 +34,24 @@ esphome:
 
 remote_transmitter:
   pin:
-    number: D8
+    number: D7
   carrier_duty_percent: 50%
 
 switch:
   - platform: template
     name: TV Power Button
+    icon: "mdi:television"
+    optimistic: true  # Needed to trace on/off in hass
     turn_on_action:
+      - remote_transmitter.transmit_samsung:
+          data: 0xE0E040BF
+    turn_off_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
 
   - platform: template
     name: TV Source Button
+    icon: "mdi:television-guide"
     turn_on_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E0807F
