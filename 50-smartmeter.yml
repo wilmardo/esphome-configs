@@ -9,6 +9,8 @@ wifi:
 
 # Enable logging
 logger:
+  level: INFO
+  esp8266_store_log_strings_in_flash: False
 
 # Enable MQTT
 mqtt:
@@ -68,7 +70,7 @@ sensor:
         unit_of_measurement: kWh
         accuracy_decimals: 3
       - name: Instant power current
-        unit_of_measurement: kWh
+        unit_of_measurement: A
         accuracy_decimals: 3
       - name: Gas consumption
         unit_of_measurement: m3

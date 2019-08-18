@@ -26,22 +26,22 @@ public:
   char TELEGRAM[P1_MAXLINELENGTH];
 
   // * Set to store the data values read
-  long CONSUMPTION_LOW_TARIF;
-  long CONSUMPTION_HIGH_TARIF;
-  long PRODUCTION_LOW_TARIF;
-  long PRODUCTION_HIGH_TARIF;
-  long POWER_DELIVERED;
-  long POWER_RECEIVED;
-  long INSTANT_POWER_CURRENT;
-  long INSTANT_POWER_USAGE;
-  long GAS_METER_M3;
+  float CONSUMPTION_LOW_TARIF;
+  float CONSUMPTION_HIGH_TARIF;
+  float PRODUCTION_LOW_TARIF;
+  float PRODUCTION_HIGH_TARIF;
+  float POWER_DELIVERED;
+  float POWER_RECEIVED;
+  byte INSTANT_POWER_CURRENT;
+  float INSTANT_POWER_USAGE;
+  float GAS_METER_M3;
 
-  // Set to store data counters read
-  long ACTUAL_TARIF;
-  long SHORT_POWER_OUTAGES;
-  long LONG_POWER_OUTAGES;
-  long SHORT_POWER_DROPS;
-  long SHORT_POWER_PEAKS;
+  // * Set to store data counters read
+  byte ACTUAL_TARIF;
+  byte SHORT_POWER_OUTAGES;
+  byte LONG_POWER_OUTAGES;
+  byte SHORT_POWER_DROPS;
+  byte SHORT_POWER_PEAKS;
 
   // * Set during CRC checking
   bool VALID_CRC_FOUND = false;
@@ -139,7 +139,7 @@ public:
     return -1;
   }
 
-  long getValue(char *buffer, int maxlen, char startchar, char endchar)
+  float getValue(char *buffer, int maxlen, char startchar, char endchar)
   {
     int s = findCharInArrayRev(buffer, startchar, maxlen - 2);
     int l = findCharInArrayRev(buffer, endchar, maxlen - 2) - s - 1;
@@ -149,16 +149,8 @@ public:
 
     if (strncpy(res, buffer + s + 1, l))
     {
-      if (endchar == '*')
-      {
-        if (isNumber(res, l))
-          // * Lazy convert float to long
-          return (1000 * atof(res));
-      }
-      else if (endchar == ')')
-      {
-        if (isNumber(res, l))
-          return atof(res);
+      if (isNumber(res, l)) {
+        return atof(res);
       }
     }
     return 0;
