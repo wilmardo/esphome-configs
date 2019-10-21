@@ -1,4 +1,5 @@
 ---
+# Enable wifi with static ip
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -7,9 +8,6 @@ wifi:
     gateway: 192.168.1.1
     subnet: 255.255.255.0
 
-# Enable logging
-logger:
-
 # Enable MQTT
 mqtt:
   broker: !secret mqtt_broker
@@ -17,40 +15,111 @@ mqtt:
   username: !secret mqtt_username
   password: !secret mqtt_password
 
+# Enable ota
 ota:
   password: !secret ota_password
 
+# Enable logging
+logger:
+  level: INFO
+  esp8266_store_log_strings_in_flash: False
+
+# Enable status led on onboard led
+status_led:
+  pin:
+    number: GPIO2
+    inverted: True
+
+# Esphome setup
 esphome:
   name: bedroom_blind
   platform: ESP8266
-  board: d1
+  board: d1_mini
 
 stepper:
 - platform: uln2003
-  id: bedroom_blind
+  id: bedroom_blind_stepper
   # NOTE: Does not seem to work on other ports
   pin_a: D8
   pin_b: D7
   pin_c: D6
   pin_d: D5
-  max_speed: 1000 steps/s
-  acceleration: 10
-  deceleration: 10
+  max_speed: 250 steps/s
+  # acceleration: 10
+  # deceleration: 10
   sleep_when_done: true
 
 cover:
 - platform: template
   device_class: blind
   name: "Bedroom Blind"
+  id: bedroom_blind_template
+  # lambda: |-
+  #     if (id(bedroom_blind).current_position > id(bedroom_blind).target_position) {
+  #       return COVER_OPENING;
+  #     } else {
+  #       return COVER_CLOSED;
+  #     }
+  # Reset counter for opening and closing since on boot the counter is 0
+  # We can't rely on the counter to report a correct position
+  # open_action:
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPERATION_OPENING;'
+  #   - stepper.report_position:
+  #       id: bedroom_blind_stepper
+  #       position: 1000
+  #   - stepper.set_target:
+  #       id: bedroom_blind_stepper
+  #       target: 0
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPERATION_IDLE;'
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPEN;'
+  # close_action:
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPERATION_CLOSING;'
+  #   - stepper.report_position:
+  #       id: bedroom_blind_stepper
+  #       position: 0
+  #   - stepper.set_target:
+  #       id: bedroom_blind_stepper
+  #       target: 1000
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPERATION_IDLE;'
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_CLOSED;'
+  # stop_action:
+  #   - stepper.set_target:
+  #       id: bedroom_blind_stepper
+  #       target: !lambda return id(bedroom_blind_stepper).current_position;
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPERATION_IDLE;'
+  #   - cover.template.publish:
+  #       id: bedroom_blind_template
+  #       state: !lambda 'return COVER_OPEN;'
+
   open_action:
+    # - stepper.report_position:
+    #     id: bedroom_blind_stepper
+    #     position: 1000
     - stepper.set_target:
-        id: bedroom_blind
-        target: 0
+        id: bedroom_blind_stepper
+        target: -1000
   close_action:
+    # - stepper.report_position:
+    #     id: bedroom_blind_stepper
+    #     position: 0
     - stepper.set_target:
-        id: bedroom_blind
-        target: 25000
+        id: bedroom_blind_stepper
+        target: 1000
   stop_action:
     - stepper.set_target:
-        id: bedroom_blind
-        target: !lambda return id(bedroom_blind).current_position;
+        id: bedroom_blind_stepper
+        target: !lambda return id(bedroom_blind_stepper).current_position;
