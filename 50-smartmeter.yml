@@ -48,7 +48,7 @@ sensor:
         dsmr_mqtt->production_low_tarif,
         dsmr_mqtt->production_high_tarif,
         dsmr_mqtt->power_delivered,
-        dsmr_mqtt->power_received,
+        dsmr_mqtt->power_received, 
         dsmr_mqtt->instant_power_usage,
         dsmr_mqtt->instant_power_current,
         dsmr_mqtt->gas_meter_m3,
@@ -76,8 +76,11 @@ sensor:
       - name: Power production normal
         unit_of_measurement: kWh
         accuracy_decimals: 3
+      - name: Actual production
+        unit_of_measurement: kW
+        accuracy_decimals: 3
       - name: Actual consumption
-        unit_of_measurement: kWh
+        unit_of_measurement: kW
         accuracy_decimals: 3
       - name: Instant power usage
         unit_of_measurement: kWh
