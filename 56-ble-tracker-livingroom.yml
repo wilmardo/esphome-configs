@@ -1,0 +1,51 @@
+---
+# Enable wifi with static ip
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: 192.168.1.56
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+# Enable captive portal:
+captive_portal:
+
+# Enable MQTT
+mqtt:
+  broker: !secret mqtt_broker
+  port: !secret mqtt_port
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+
+# Enable ota
+ota:
+  password: !secret ota_password
+
+# Enable logging
+logger:
+  level: INFO
+
+# Enable status led on onboard led
+status_led:
+  pin:
+    number: GPIO2
+
+# Esphome setup
+esphome:
+  name: baecon
+  platform: ESP32
+  board: esp32doit-devkit-v1
+
+esp32_ble_tracker:
+
+binary_sensor:
+  - platform: ble_presence
+    device_class: occupancy
+    mac_address: !secret wilmar_ble_mac
+    name: Wilmar Livingroom 
+
+  - platform: ble_presence
+    device_class: occupancy
+    mac_address: !secret annemarie_ble_mac
+    name: Annemarie Livingroom

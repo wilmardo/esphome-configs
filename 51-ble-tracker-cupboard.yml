@@ -42,5 +42,10 @@ esp32_ble_tracker:
 binary_sensor:
   - platform: ble_presence
     device_class: occupancy
-    mac_address: !secret wilmar_mac
-    name: "Wilmar Home"
+    mac_address: !secret wilmar_ble_mac
+    name: Wilmar Cupboard
+
+  - platform: ble_presence
+    device_class: occupancy
+    mac_address: !secret annemarie_ble_mac
+    name: Annemarie Cupboard
