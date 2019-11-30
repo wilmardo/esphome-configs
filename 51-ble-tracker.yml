@@ -25,13 +25,11 @@ ota:
 # Enable logging
 logger:
   level: INFO
-  esp8266_store_log_strings_in_flash: False
 
 # Enable status led on onboard led
 status_led:
   pin:
     number: GPIO2
-    inverted: True
 
 # Esphome setup
 esphome:
@@ -39,8 +37,10 @@ esphome:
   platform: ESP32
   board: esp32doit-devkit-v1
 
-esp32_ble_beacon:
-  type: iBeacon
-  uuid: '55add50c-db10-4cc5-bc81-5635a379686f'
-  major: 10123
-  minor: 1
+esp32_ble_tracker:
+
+binary_sensor:
+  - platform: ble_presence
+    device_class: occupancy
+    mac_address: !secret wilmar_mac
+    name: "Wilmar Home"

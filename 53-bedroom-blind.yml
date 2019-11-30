@@ -24,7 +24,7 @@ ota:
 
 # Enable logging
 logger:
-  level: INFO
+  level: DEBUG
   esp8266_store_log_strings_in_flash: False
 
 # Enable status led on onboard led
@@ -40,23 +40,49 @@ esphome:
   board: d1_mini
 
 stepper:
-- platform: uln2003
+- platform: a4988
   id: bedroom_blind_stepper
-  # NOTE: Does not seem to work on other ports
-  pin_a: D8
-  pin_b: D7
-  pin_c: D6
-  pin_d: D5
+  dir_pin: D1
+  step_pin: D2
+  sleep_pin: D3
   max_speed: 250 steps/s
   # acceleration: 10
   # deceleration: 10
-  sleep_when_done: true
+
+# stepper:
+# - platform: uln2003
+#   id: bedroom_blind_stepper
+#   pin_a: D1
+#   pin_b: D2
+#   pin_c: D3
+#   pin_d: D4
+#   max_speed: 250 steps/s
+#   sleep_when_done: true 
 
 cover:
-- platform: template
-  device_class: blind
-  name: "Bedroom Blind"
-  id: bedroom_blind_template
+  - platform: template
+    device_class: blind
+    name: "Bedroom Blind"
+    id: bedroom_blind_template
+    optimistic: true 
+    open_action:
+      - stepper.set_target:
+          id: bedroom_blind_stepper
+          target: 0 
+    close_action:
+      - stepper.set_target:
+          id: bedroom_blind_stepper
+          target: 5000
+    stop_action:
+      - stepper.set_target:
+          id: bedroom_blind_stepper
+          target: !lambda return id(bedroom_blind_stepper).current_position;      
+
+# cover:
+# - platform: template
+#   device_class: blind
+#   name: "Bedroom Blind"
+#   id: bedroom_blind_template
   # lambda: |-
   #     if (id(bedroom_blind).current_position > id(bedroom_blind).target_position) {
   #       return COVER_OPENING;
@@ -107,22 +133,3 @@ cover:
   #   - cover.template.publish:
   #       id: bedroom_blind_template
   #       state: !lambda 'return COVER_OPEN;'
-
-  open_action:
-    # - stepper.report_position:
-    #     id: bedroom_blind_stepper
-    #     position: 1000
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: -1000
-  close_action:
-    # - stepper.report_position:
-    #     id: bedroom_blind_stepper
-    #     position: 0
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: 1000
-  stop_action:
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: !lambda return id(bedroom_blind_stepper).current_position;
