@@ -52,10 +52,17 @@ remote_transmitter:
   carrier_duty_percent: 50%
 
 switch:
+  # TV Power Button with state from CT Clamp
   - platform: template
     name: TV Power Button
     icon: "mdi:television"
-    optimistic: true  # Needed to trace on/off in hass
+    restore_state: true
+    lambda: |
+      if (id(ct_clamp).state < 30) {
+          return true;
+      } else {
+        return false;
+      }
     turn_on_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
@@ -63,9 +70,23 @@ switch:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
 
+  # TV Source button
   - platform: template
     name: TV Source Button
     icon: "mdi:television-guide"
     turn_on_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E0807F
+
+# CT Clamp sensor to check if the TV is really on
+sensor:
+  - platform: ct_clamp
+    sensor: adc_sensor
+    update_interval: 0ms
+    id: ct_clamp
+    internal: true
+
+  - platform: adc
+    pin: A0
+    id: adc_sensor
+    internal: true
