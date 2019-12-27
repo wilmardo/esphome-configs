@@ -61,9 +61,15 @@ switch:
     turn_on_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
+          repeat:
+            times: 3
+            wait_time: 200ms
     turn_off_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E040BF
+          repeat:
+            times: 3
+            wait_time: 200ms
 
   # TV Source button
   - platform: template
