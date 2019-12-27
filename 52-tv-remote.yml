@@ -40,13 +40,7 @@ esphome:
   platform: ESP8266
   board: d1_mini
 
-# Receive codes
-# remote_receiver:
-#   pin:
-#     number: D6
-#     inverted: True
-#   dump: all
-
+# Modules setup
 remote_transmitter:
   pin:
     number: D7
@@ -59,7 +53,7 @@ switch:
     icon: "mdi:television"
     restore_state: true
     lambda: |
-      if (id(ct_clamp).state < 30) {
+      if (id(tv_clamp).state > 0.027) {
           return true;
       } else {
         return false;
@@ -83,11 +77,10 @@ switch:
 sensor:
   - platform: ct_clamp
     sensor: adc_sensor
-    update_interval: 0ms
-    id: ct_clamp
-    internal: true
+    id: tv_clamp
+    update_interval: 1s
+    accuracy_decimals: 4
 
   - platform: adc
     pin: A0
     id: adc_sensor
-    internal: true
