@@ -40,97 +40,97 @@ esphome:
   platform: ESP8266
   board: d1_mini
 
-stepper:
-- platform: a4988
-  id: bedroom_blind_stepper
-  dir_pin: D1
-  step_pin: D2
-  sleep_pin: D3
-  max_speed: 250 steps/s
+# stepper:
+# - platform: a4988
+#   id: bedroom_blind_stepper
+#   dir_pin: D1
+#   step_pin: D2
+#   sleep_pin: D3
+#   max_speed: 250 steps/s
   # acceleration: 10
   # deceleration: 10
 
-# stepper:
-# - platform: uln2003
-#   id: bedroom_blind_stepper
-#   pin_a: D1
-#   pin_b: D2
-#   pin_c: D3
-#   pin_d: D4
-#   max_speed: 250 steps/s
-#   sleep_when_done: true 
-
-cover:
-  - platform: template
-    device_class: blind
-    name: "Bedroom Blind"
-    id: bedroom_blind_template
-    optimistic: true 
-    open_action:
-      - stepper.set_target:
-          id: bedroom_blind_stepper
-          target: 0 
-    close_action:
-      - stepper.set_target:
-          id: bedroom_blind_stepper
-          target: 5000
-    stop_action:
-      - stepper.set_target:
-          id: bedroom_blind_stepper
-          target: !lambda return id(bedroom_blind_stepper).current_position;      
+stepper:
+- platform: uln2003
+  id: bedroom_blind_stepper
+  pin_a: D8
+  pin_b: D7
+  pin_c: D6
+  pin_d: D5
+  max_speed: 100 steps/s
+  sleep_when_done: true
 
 # cover:
-# - platform: template
-#   device_class: blind
-#   name: "Bedroom Blind"
-#   id: bedroom_blind_template
-  # lambda: |-
-  #     if (id(bedroom_blind).current_position > id(bedroom_blind).target_position) {
-  #       return COVER_OPENING;
-  #     } else {
-  #       return COVER_CLOSED;
-  #     }
+#   - platform: template
+#     device_class: blind
+#     name: "Bedroom Blind"
+#     id: bedroom_blind_template
+#     optimistic: true
+#     open_action:
+#       - stepper.set_target:
+#           id: bedroom_blind_stepper
+#           target: 0
+#     close_action:
+#       - stepper.set_target:
+#           id: bedroom_blind_stepper
+#           target: -50000
+#     stop_action:
+#       - stepper.set_target:
+#           id: bedroom_blind_stepper
+#           target: !lambda return id(bedroom_blind_stepper).current_position;
+
+cover:
+- platform: template
+  device_class: blind
+  name: "Bedroom Blind"
+  id: bedroom_blind_template
+  lambda: |-
+      if (id(bedroom_blind_stepper).current_position > id(bedroom_blind_stepper).target_position) {
+        return COVER_OPEN;
+      } else {
+        return COVER_CLOSED;
+      }
   # Reset counter for opening and closing since on boot the counter is 0
   # We can't rely on the counter to report a correct position
-  # open_action:
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPERATION_OPENING;'
-  #   - stepper.report_position:
-  #       id: bedroom_blind_stepper
-  #       position: 1000
-  #   - stepper.set_target:
-  #       id: bedroom_blind_stepper
-  #       target: 0
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPERATION_IDLE;'
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPEN;'
-  # close_action:
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPERATION_CLOSING;'
-  #   - stepper.report_position:
-  #       id: bedroom_blind_stepper
-  #       position: 0
-  #   - stepper.set_target:
-  #       id: bedroom_blind_stepper
-  #       target: 1000
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPERATION_IDLE;'
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_CLOSED;'
-  # stop_action:
-  #   - stepper.set_target:
-  #       id: bedroom_blind_stepper
-  #       target: !lambda return id(bedroom_blind_stepper).current_position;
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPERATION_IDLE;'
-  #   - cover.template.publish:
-  #       id: bedroom_blind_template
-  #       state: !lambda 'return COVER_OPEN;'
+  open_action:
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPERATION_OPENING;'
+    - stepper.report_position:
+        id: bedroom_blind_stepper
+        position: -7500
+    - stepper.set_target:
+        id: bedroom_blind_stepper
+        target: 0
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPERATION_IDLE;'
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPEN;'
+  close_action:
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPERATION_CLOSING;'
+    - stepper.report_position:
+        id: bedroom_blind_stepper
+        position: 0
+    - stepper.set_target:
+        id: bedroom_blind_stepper
+        target: 7500
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPERATION_IDLE;'
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_CLOSED;'
+  stop_action:
+    - stepper.set_target:
+        id: bedroom_blind_stepper
+        target: !lambda return id(bedroom_blind_stepper).current_position;
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPERATION_IDLE;'
+    - cover.template.publish:
+        id: bedroom_blind_template
+        state: !lambda 'return COVER_OPEN;'
