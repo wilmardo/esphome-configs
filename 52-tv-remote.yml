@@ -53,7 +53,7 @@ switch:
     icon: "mdi:television"
     restore_state: true
     lambda: |
-      if (id(tv_clamp).state > 0.03) {
+      if (id(tv_clamp).state > 0.027) {
           return true;
       } else {
         return false;

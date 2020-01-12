@@ -46,7 +46,7 @@ binary_sensor:
   - platform: template
     name: Stove
     lambda: |
-      if (id(stove_clamp).state > 0.03) {
+      if (id(stove_clamp).state > 0.04) {
           return true;
       } else {
         return false;
