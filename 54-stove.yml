@@ -36,7 +36,7 @@ status_led:
 
 # Esphome setup
 esphome:
-  name: tv_remote
+  name: stove
   platform: ESP8266
   board: d1_mini
 
@@ -57,9 +57,10 @@ sensor:
   - platform: ct_clamp
     sensor: adc_sensor
     id: stove_clamp
-    update_interval: 1s
+    update_interval: 10s
     accuracy_decimals: 4
 
   - platform: adc
     pin: A0
     id: adc_sensor
+    update_interval: 10s
