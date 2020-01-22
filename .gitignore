@@ -1,4 +1,12 @@
+# Exclude all to exclude the build directories
 *
+# Include custom-components
 !custom-components/
-!img/*
+!custom-components/**
+
+# Include docs
+!docs/
+!docs/**
+
+# Include yamls in root
 !*.yml
