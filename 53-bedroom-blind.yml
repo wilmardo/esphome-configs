@@ -60,25 +60,6 @@ stepper:
   max_speed: 100 steps/s
   sleep_when_done: true
 
-# cover:
-#   - platform: template
-#     device_class: blind
-#     name: "Bedroom Blind"
-#     id: bedroom_blind_template
-#     optimistic: true
-#     open_action:
-#       - stepper.set_target:
-#           id: bedroom_blind_stepper
-#           target: 0
-#     close_action:
-#       - stepper.set_target:
-#           id: bedroom_blind_stepper
-#           target: -50000
-#     stop_action:
-#       - stepper.set_target:
-#           id: bedroom_blind_stepper
-#           target: !lambda return id(bedroom_blind_stepper).current_position;
-
 cover:
 - platform: template
   device_class: blind
@@ -98,7 +79,7 @@ cover:
         state: !lambda 'return COVER_OPERATION_OPENING;'
     - stepper.report_position:
         id: bedroom_blind_stepper
-        position: -7500
+        position: 15000
     - stepper.set_target:
         id: bedroom_blind_stepper
         target: 0
@@ -117,7 +98,7 @@ cover:
         position: 0
     - stepper.set_target:
         id: bedroom_blind_stepper
-        target: 7500
+        target: 15000
     - cover.template.publish:
         id: bedroom_blind_template
         state: !lambda 'return COVER_OPERATION_IDLE;'
