@@ -1,4 +1,6 @@
 ---
+<<: !include _common-esp8266.yml
+
 # Enable wifi with static ip
 wifi:
   ssid: !secret wifi_ssid
@@ -8,31 +10,6 @@ wifi:
     static_ip: 192.168.1.54
     gateway: 192.168.1.1
     subnet: 255.255.255.0
-
-# Enable captive portal:
-captive_portal:
-
-# Enable MQTT
-mqtt:
-  broker: !secret mqtt_broker
-  port: !secret mqtt_port
-  username: !secret mqtt_username
-  password: !secret mqtt_password
-
-# Enable ota
-ota:
-  password: !secret ota_password
-
-# Enable logging
-logger:
-  level: INFO
-  esp8266_store_log_strings_in_flash: False
-
-# Enable status led on onboard led
-status_led:
-  pin:
-    number: GPIO2
-    inverted: True
 
 # Esphome setup
 esphome:
