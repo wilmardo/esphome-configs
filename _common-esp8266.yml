@@ -13,6 +13,10 @@ mqtt:
 ota:
   password: !secret ota_password
 
+# Enable webserver
+web_server:
+  port: 80
+
 # Enable logging
 logger:
   level: DEBUG
