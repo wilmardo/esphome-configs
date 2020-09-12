@@ -1,4 +1,13 @@
 ---
+<<: !include _common-esp8266.yml
+<<: !include _common-blind.yml
+
+substitutions:
+  devicename: bedroom_blind
+  upper_devicename: Bedroom Blind
+  mystepper: my_stepper  # Name of the stepper motor (leave as is)
+  speed: 1000 steps/s  # Set the speed of the motor
+
 # Enable wifi with static ip
 wifi:
   ssid: !secret wifi_ssid
@@ -9,109 +18,5 @@ wifi:
     gateway: 192.168.1.1
     subnet: 255.255.255.0
 
-# Enable captive portal:
-captive_portal:
-
-# Enable MQTT
-mqtt:
-  broker: !secret mqtt_broker
-  port: !secret mqtt_port
-  username: !secret mqtt_username
-  password: !secret mqtt_password
-
-# Enable ota
-ota:
-  password: !secret ota_password
-
-# Enable logging
-logger:
-  level: DEBUG
-  esp8266_store_log_strings_in_flash: False
-
-# Enable status led on onboard led
-status_led:
-  pin:
-    number: GPIO2
-    inverted: True
-
-# Esphome setup
-esphome:
-  name: bedroom_blind
-  platform: ESP8266
-  board: d1_mini
-
-# stepper:
-# - platform: a4988
-#   id: bedroom_blind_stepper
-#   dir_pin: D1
-#   step_pin: D2
-#   sleep_pin: D3
-#   max_speed: 250 steps/s
-  # acceleration: 10
-  # deceleration: 10
-
-stepper:
-- platform: uln2003
-  id: bedroom_blind_stepper
-  pin_a: D8
-  pin_b: D7
-  pin_c: D6
-  pin_d: D5
-  max_speed: 100 steps/s
-  sleep_when_done: true
-
-cover:
-- platform: template
-  device_class: blind
-  name: "Bedroom Blind"
-  id: bedroom_blind_template
-  lambda: |-
-      if (id(bedroom_blind_stepper).current_position > id(bedroom_blind_stepper).target_position) {
-        return COVER_OPEN;
-      } else {
-        return COVER_CLOSED;
-      }
-  # Reset counter for opening and closing since on boot the counter is 0
-  # We can't rely on the counter to report a correct position
-  open_action:
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPERATION_OPENING;'
-    - stepper.report_position:
-        id: bedroom_blind_stepper
-        position: 15000
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: 0
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPERATION_IDLE;'
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPEN;'
-  close_action:
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPERATION_CLOSING;'
-    - stepper.report_position:
-        id: bedroom_blind_stepper
-        position: 0
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: 15000
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPERATION_IDLE;'
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_CLOSED;'
-  stop_action:
-    - stepper.set_target:
-        id: bedroom_blind_stepper
-        target: !lambda return id(bedroom_blind_stepper).current_position;
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPERATION_IDLE;'
-    - cover.template.publish:
-        id: bedroom_blind_template
-        state: !lambda 'return COVER_OPEN;'
+web_server:
+  port: 80
