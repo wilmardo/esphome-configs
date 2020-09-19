@@ -29,8 +29,9 @@ switch:
     name: TV Power Button
     icon: "mdi:television"
     restore_state: true
+    # 0.02288 A: idle consumption
     lambda: |
-      if (id(tv_clamp).state > 0.027) {
+      if (id(tv_clamp).state > 0.025) {
           return true;
       } else {
         return false;
@@ -63,7 +64,9 @@ sensor:
     id: tv_clamp
     update_interval: 1s
     accuracy_decimals: 4
+    internal: true
 
   - platform: adc
     pin: A0
     id: adc_sensor
+    internal: true

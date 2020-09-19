@@ -22,6 +22,7 @@ binary_sensor:
   # TV Power Button with state from CT Clamp
   - platform: template
     name: Stove
+    # starting the cooker hood +/- 0.31V (0.01A)
     lambda: |
       if (id(stove_clamp).state > 0.04) {
           return true;
@@ -36,8 +37,10 @@ sensor:
     id: stove_clamp
     update_interval: 10s
     accuracy_decimals: 4
+    internal: true
 
   - platform: adc
     pin: A0
     id: adc_sensor
     update_interval: 10s
+    internal: true
