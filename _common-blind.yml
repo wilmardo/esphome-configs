@@ -1,4 +1,3 @@
-# Source: https://github.com/RoadkillUK/Motor-on-a-Roller-Blind-for-ESPHOME/blob/master/.common_blind.yaml
 # This sketch will add 2 switches named <upper_devicename> Setup Switch and Setup Button
 # Use your mobile or tablet and connect to http://<devicename>.local to set up the blind
 # Turn on the Setup Switch to enter Setup Mode and use the Setup Button as shown below to setup blinds.
@@ -64,12 +63,14 @@ esphome:
 stepper:
   - platform: a4988
     id: ${mystepper}
-    dir_pin: D8
+    dir_pin:
+      number: D8
+      inverted: true
     step_pin: D7
+    # sleep_pin: D6
     max_speed: ${speed}
     acceleration: 100
     deceleration: 100
-
 
 globals:
   - id: ${mystepper}_global # Integer for storing the stepper position in case of reboot
@@ -95,7 +96,7 @@ globals:
 binary_sensor:
   - platform: gpio
     pin:
-      number: D7 # Connect Button to D7 and GND
+      number: D3 # Connect Button to D3 and GND
       mode: INPUT_PULLUP
       inverted: True
     name: Button
