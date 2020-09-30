@@ -1,0 +1,53 @@
+<<: !include _common-esp8266.yml
+
+# Enable wifi with static ip
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  manual_ip:
+    static_ip: 192.168.1.57
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
+# Esphome setup
+esphome:
+  name: bed_presence
+  platform: ESP8266
+  board: d1_mini
+
+# Setup sensors
+sensor:
+  - platform: hx711
+    id: raw_value
+    internal: true
+    dout_pin: D0
+    clk_pin: D1
+    update_interval: 60s
+    # TODO calibrate
+    filters:
+      - calibrate_linear:
+          - 120 -> 0
+          - 810 -> 1
+    unit_of_measurement: kg
+
+binary_sensor:
+  - platform: template
+    device_class: occupancy
+    name: One bed occupancy
+    lambda: |-
+      if (id(raw_value).state > 200) {
+        return 'on';
+      } else {
+        return 'off';
+      }
+
+  - platform: template
+    name: Two bed occupancy
+    device_class: occupancy
+    lambda: |-
+      if (id(raw_value).state > 400) {
+        return 42.0;
+      } else {
+        return 0.0;
+      }
