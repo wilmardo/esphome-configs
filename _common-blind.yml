@@ -25,7 +25,7 @@ esphome:
   name: $devicename
   platform: ESP8266
   board: d1_mini
-  esp8266_restore_from_flash: True
+  esp8266_restore_from_flash: true
   on_boot:
     - priority: -200.0
       then:
@@ -75,17 +75,17 @@ stepper:
 globals:
   - id: ${mystepper}_global # Integer for storing the stepper position in case of reboot
     type: int
-    restore_value: True
+    restore_value: true
     initial_value: '0'
 
   - id: openclosed # Boolean to store OPEN/CLOSED state
     type: bool
-    restore_value: True
+    restore_value: true
     initial_value: '0'
 
   - id: endstop # Variable for storing ENDSTOP (how far to move stepper)
     type: int
-    restore_value: True
+    restore_value: true
     initial_value: '1000'
 
   - id: settingmode # Integer for Setup Mode
@@ -98,9 +98,9 @@ binary_sensor:
     pin:
       number: D3 # Connect Button to D3 and GND
       mode: INPUT_PULLUP
-      inverted: True
+      inverted: true
     name: Button
-    internal: True
+    internal: true
     on_click:
     - min_length: 50ms
       max_length: 500ms
