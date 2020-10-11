@@ -21,14 +21,14 @@ sensor:
   - platform: hx711
     id: raw_value
     internal: true
-    dout_pin: D0
-    clk_pin: D1
+    dout_pin: D4 # DT on pcb
+    clk_pin: D7  # SCK on pcb
     update_interval: 60s
     # TODO calibrate
-    filters:
-      - calibrate_linear:
-          - 120 -> 0
-          - 810 -> 1
+    # filters:
+    #   - calibrate_linear:
+    #       - 120 -> 0
+    #       - 810 -> 1
     unit_of_measurement: kg
 
 binary_sensor:
