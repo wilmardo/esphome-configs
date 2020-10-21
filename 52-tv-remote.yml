@@ -23,31 +23,46 @@ remote_transmitter:
     number: D7
   carrier_duty_percent: 50%
 
+#  Example configuration entry
+globals:
+  - id: threshold
+    type: float
+    initial_value: '0.03'
+
 switch:
   # TV Power Button with state from CT Clamp
   - platform: template
     name: TV Power Button
     icon: "mdi:television"
-    restore_state: true
     # 0.02288 A: idle consumption
-    lambda: |
-      if (id(tv_clamp).state > 0.025) {
-          return true;
+    lambda: |-
+      if (id(tv_clamp).state > id(threshold)) {
+        return true;
       } else {
         return false;
       }
     turn_on_action:
-      - remote_transmitter.transmit_samsung:
-          data: 0xE0E040BF
-          repeat:
-            times: 3
-            wait_time: 200ms
+      if:
+        # Only turn on when off
+        condition:
+          lambda: 'return id(tv_clamp).state < id(threshold);'
+        then:
+          - remote_transmitter.transmit_samsung:
+              data: 0xE0E040BF
+              repeat:
+                times: 3
+                wait_time: 200ms
     turn_off_action:
-      - remote_transmitter.transmit_samsung:
-          data: 0xE0E040BF
-          repeat:
-            times: 3
-            wait_time: 200ms
+      if:
+        # Only turn off when on
+        condition:
+          lambda: 'return id(tv_clamp).state > id(threshold);'
+        then:
+          - remote_transmitter.transmit_samsung:
+              data: 0xE0E040BF
+              repeat:
+                times: 3
+                wait_time: 200ms
 
   # TV Source button
   - platform: template
@@ -64,6 +79,7 @@ sensor:
     id: tv_clamp
     update_interval: 1s
     accuracy_decimals: 4
+    sample_duration: 900ms
     internal: true
 
   - platform: adc
