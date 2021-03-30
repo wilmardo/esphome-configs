@@ -57,7 +57,7 @@ esphome:
           then: #  # Publish state etc.
             - cover.template.publish:
                 id: blinded
-                position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));' 
+                position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
                 current_operation: IDLE
 
 stepper:
@@ -171,19 +171,19 @@ cover:
             target: !lambda return id(endstop);
         - cover.template.publish:
             id: blinded
-            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));' 
+            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
             current_operation: OPENING
         - wait_until: # Wait until endstop reached
             lambda: 'return (id($mystepper).current_position == id(endstop));'
         - globals.set: # Set global to current position
             id: ${mystepper}_global
-            value: !lambda return id($mystepper).current_position; 
+            value: !lambda return id($mystepper).current_position;
         - globals.set: # Set toggle to OPEN (No need for 'optimistic mode')
             id: openclosed
             value: '1'
         - cover.template.publish:
             id: blinded
-            state: OPEN 
+            state: OPEN
             current_operation: IDLE
     close_action:
       then:
@@ -193,13 +193,13 @@ cover:
             target: '0'
         - cover.template.publish:
             id: blinded
-            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));' 
+            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
             current_operation: CLOSING
         - wait_until: # Wait until endstop reached
             lambda: 'return id($mystepper).current_position == 0;'
         - globals.set: # Set global to current position
             id: ${mystepper}_global
-            value: !lambda return id($mystepper).current_position; 
+            value: !lambda return id($mystepper).current_position;
         - globals.set: # Set toggle to CLOSED (No need for 'optimistic mode')
             id: openclosed
             value: '0'
@@ -214,10 +214,10 @@ cover:
             target: !lambda return int(id(endstop) * pos);
         - globals.set: # Set global to current position
             id: ${mystepper}_global
-            value: !lambda return id($mystepper).current_position; 
+            value: !lambda return id($mystepper).current_position;
         - cover.template.publish:
             id: blinded
-            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));' 
+            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
             current_operation: IDLE
     stop_action:
       then:
@@ -229,7 +229,7 @@ cover:
             value: !lambda return id($mystepper).current_position;
         - cover.template.publish:
             id: blinded
-            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));' 
+            position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
             current_operation: IDLE
     has_position: true
     device_class: blind
@@ -259,7 +259,7 @@ script:
                 value: '1'
             - cover.template.publish:
                 id: blinded
-                state: OPEN 
+                state: OPEN
                 current_operation: IDLE
             - logger.log: "Exiting Setting Mode"
       - if:
