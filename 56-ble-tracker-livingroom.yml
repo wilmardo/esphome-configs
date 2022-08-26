@@ -1,51 +1,21 @@
 ---
 <<: !include _common-esp32.yml
 
-# Enable wifi with static ip
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  fast_connect: true
-  manual_ip:
-    static_ip: 192.168.1.56
-    gateway: 192.168.1.1
-    subnet: 255.255.255.0
-
-# Esphome setup
-esphome:
-  name: baecon
-  platform: ESP32
-  board: esp32doit-devkit-v1
+substitutions:
+  devicename: baecon
+  wifi_ip: 192.168.1.56
 
 esp32_ble_tracker:
+  scan_parameters:
+    active: false  # not needed and consumes more power
 
 binary_sensor:
   - platform: ble_presence
     device_class: occupancy
-    mac_address: !secret wilmar_ble_mac
-    name: Wilmar Livingroom
+    ibeacon_uuid: !secret wilmar_ble_ibeacon_uuid
+    name: Wilmar Phone Livingroom
 
   - platform: ble_presence
     device_class: occupancy
-    mac_address: !secret annemarie_ble_mac
-    name: Annemarie Livingroom
-
-sensor:
-  - platform: ble_rssi
-    mac_address: !secret wilmar_ble_mac
-    accuracy_decimals: 0
-    unit_of_measurement: "%"
-    icon: "mdi:battery-bluetooth"
-    # Convert to positive values
-    filters:
-      multiply: -1
-    name: "Wilmar Tracker Battery"
-  - platform: ble_rssi
-    mac_address: !secret annemarie_ble_mac
-    unit_of_measurement: "%"
-    accuracy_decimals: 0
-    icon: "mdi:battery-bluetooth"
-    # Convert to positive values
-    filters:
-      multiply: -1
-    name: "Annemarie Tracker Battery"
+    ibeacon_uuid: !secret annemarie_ble_ibeacon_uuid
+    name: Annemarie Phone Livingroom
