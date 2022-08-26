@@ -2,9 +2,11 @@
 
 My home automation things based on Esphomet
 
+## Blinds
+
+Set VREF to for TMC2208 with NEMA17 to 1.4V (proved most torque without skipping)
+
 ## Credits
 
-* Esphome https://esphome.io/index.html
-* jantenhove for the P1 parsing https://github.com/jantenhove/P1-Meter-ESP8266
-* neographikal for more P1 parsing https://github.com/neographikal/P1-Meter-ESP8266-MQTT
-* RoadkillUK for the rollerblinds example https://github.com/RoadkillUK/Motor-on-a-Roller-Blind-for-ESPHOME
+* [Esphome](https://esphome.io/index.html)
+* [RoadkillUK](https://github.com/RoadkillUK/Motor-on-a-Roller-Blind-for-ESPHOME) for the rollerblinds

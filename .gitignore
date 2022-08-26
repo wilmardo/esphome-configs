@@ -10,3 +10,6 @@
 
 # Include yamls in root
 !*.yml
+
+# setup readme
+!README.md
