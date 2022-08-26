@@ -1,21 +1,9 @@
 ---
 <<: !include _common-esp8266.yml
 
-# Enable wifi with static ip
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  fast_connect: true
-  manual_ip:
-    static_ip: 192.168.1.52
-    gateway: 192.168.1.1
-    subnet: 255.255.255.0
-
-# Esphome setup
-esphome:
-  name: tv_remote
-  platform: ESP8266
-  board: d1_mini
+substitutions:
+  devicename: tv_remote
+  wifi_ip: 192.168.1.52
 
 # Modules setup
 remote_transmitter:
@@ -23,11 +11,11 @@ remote_transmitter:
     number: D7
   carrier_duty_percent: 50%
 
-#  Example configuration entry
 globals:
+  # When above treshold TV is in ON state
   - id: threshold
     type: float
-    initial_value: '0.03'
+    initial_value: '0.021'
 
 switch:
   # TV Power Button with state from CT Clamp
