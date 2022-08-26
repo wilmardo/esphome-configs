@@ -9,6 +9,16 @@ mqtt:
   username: !secret mqtt_username
   password: !secret mqtt_password
 
+# Enable wifi with static ip
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  manual_ip:
+    static_ip: ${wifi_ip}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+
 # Enable ota
 ota:
   password: !secret ota_password
@@ -27,3 +37,8 @@ status_led:
   pin:
     number: GPIO2
     inverted: True
+
+esphome:
+  name: ${devicename}
+  platform: ESP8266
+  board: d1_mini
