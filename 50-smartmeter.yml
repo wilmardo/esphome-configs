@@ -2,80 +2,44 @@
 <<: !include _common-esp8266.yml
 
 substitutions:
+  devicename: smartmeter
   wifi_ip: 192.168.1.50
 
-# Override esphome since includes can't be substituted
-esphome:
-  name: smartmeter
-  platform: ESP8266
-  board: d1_mini
-  includes:
-    - custom-components/dsmr_mqtt.h
+uart:
+  id: uart_bus
+  tx_pin: TX
+  rx_pin: RX
+  baud_rate: 115200
+
+dsmr:
+  uart_id: uart_bus
 
 sensor:
-  - platform: custom
-    lambda: |-
-      auto dsmr_mqtt = new DsmrMqtt();
-      App.register_component(dsmr_mqtt);
-      return {
-        dsmr_mqtt->consumption_low_tarif,
-        dsmr_mqtt->consumption_high_tarif,
-        dsmr_mqtt->production_low_tarif,
-        dsmr_mqtt->production_high_tarif,
-        dsmr_mqtt->power_delivered,
-        dsmr_mqtt->power_received,
-        dsmr_mqtt->instant_power_usage,
-        dsmr_mqtt->instant_power_current,
-        dsmr_mqtt->gas_meter_m3,
-        dsmr_mqtt->actual_tarif_group,
-        dsmr_mqtt->short_power_outages,
-        dsmr_mqtt->long_power_outages,
-        dsmr_mqtt->short_power_drops,
-        dsmr_mqtt->short_power_peaks
-      };
-    sensors:
-      - name: Power consumption low
-        unit_of_measurement: kWh
-        accuracy_decimals: 3
-        state_class: total_increasing
-        on_value:
-          then:
-            - switch.turn_on: led
-            - delay: 100ms
-            - switch.turn_off: led
-      - name: Power consumption normal
-        unit_of_measurement: kWh
-        accuracy_decimals: 3
-        state_class: total_increasing
-      - name: Power production low
-        unit_of_measurement: kWh
-        accuracy_decimals: 3
-        state_class: total_increasing
-      - name: Power production normal
-        unit_of_measurement: kWh
-        accuracy_decimals: 3
-        state_class: total_increasing
-      - name: Actual production
-        unit_of_measurement: kW
-        accuracy_decimals: 3
-      - name: Actual consumption
-        unit_of_measurement: kW
-        accuracy_decimals: 3
-      - name: Instant power usage
-        unit_of_measurement: kWh
-        accuracy_decimals: 3
-      - name: Instant power current
-        unit_of_measurement: A
-        accuracy_decimals: 3
-      - name: Gas consumption
-        unit_of_measurement: m3
-        accuracy_decimals: 3
-        state_class: total_increasing
-      - name: Tarif group
-      - name: Short power outages
-      - name: Long power outages
-      - name: Short power drops
-      - name: Short power peaks
+  - platform: dsmr
+    energy_delivered_tariff1:
+      name: Power consumption low
+      on_value:
+        then:
+          - switch.turn_on: led
+          - delay: 100ms
+          - switch.turn_off: led
+    energy_delivered_tariff2:
+      name: Power consumption normal
+      on_value:
+        then:
+          - switch.turn_on: led
+          - delay: 100ms
+          - switch.turn_off: led
+    energy_returned_tariff1:
+      name: Power production low
+    energy_returned_tariff2:
+      name: Power production normal
+    power_returned:
+      name: Actual production
+    power_delivered:
+      name: Actual consumption
+    gas_delivered:
+      name: Gas consumption
 
 switch:
   - platform: gpio
