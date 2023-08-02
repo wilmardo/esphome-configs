@@ -1,0 +1,24 @@
+<<: !include _common-esp8266.yml
+
+substitutions:
+  devicename: opentherm-serial
+  wifi_ip: 192.168.1.63
+
+external_components:
+  - source: github://oxan/esphome-stream-server
+
+logger:
+  # move logger away from TX/RX pins
+  hardware_uart: UART1
+
+uart:
+  id: uart_bus
+  tx_pin: TX
+  rx_pin: RX
+  baud_rate: 115200
+  rx_buffer_size: &buffer 8192
+
+stream_server:
+  uart_id: uart_bus
+  port: 23
+  buffer_size: *buffer
