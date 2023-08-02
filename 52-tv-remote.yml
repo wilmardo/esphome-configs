@@ -15,14 +15,37 @@ globals:
   # When above treshold TV is in ON state
   - id: threshold
     type: float
-    initial_value: '0.021'
+    # 0.025A: idle consumption
+    # 0.029A: powered on
+    initial_value: '0.025'
+
+# CT Clamp sensor to check if the TV is really on
+sensor:
+  - platform: ct_clamp
+    sensor: adc_sensor
+    id: tv_clamp
+    update_interval: 1s
+    accuracy_decimals: 4
+    sample_duration: 900ms
+    internal: true
+    # debounce
+    filters:
+      - median:
+          window_size: 7
+          send_every: 4
+          send_first_at: 3
+
+  - platform: adc
+    pin: A0
+    id: adc_sensor
+    internal: true
 
 switch:
   # TV Power Button with state from CT Clamp
   - platform: template
     name: TV Power Button
     icon: "mdi:television"
-    # 0.02288 A: idle consumption
+    # state from CT clamp
     lambda: |-
       if (id(tv_clamp).state > id(threshold)) {
         return true;
@@ -59,18 +82,3 @@ switch:
     turn_on_action:
       - remote_transmitter.transmit_samsung:
           data: 0xE0E0807F
-
-# CT Clamp sensor to check if the TV is really on
-sensor:
-  - platform: ct_clamp
-    sensor: adc_sensor
-    id: tv_clamp
-    update_interval: 1s
-    accuracy_decimals: 4
-    sample_duration: 900ms
-    internal: true
-
-  - platform: adc
-    pin: A0
-    id: adc_sensor
-    internal: true
