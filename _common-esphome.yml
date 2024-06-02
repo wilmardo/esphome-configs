@@ -29,14 +29,14 @@ web_server:
 
 # Enable logging
 logger:
-  level: INFO
+  level: DEBUG
+  esp8266_store_log_strings_in_flash: False
 
 # Enable status led on onboard led
-# status_led:
-#   pin:
-#     number: GPIO2
+status_led:
+  pin:
+    number: D4
+    inverted: True
 
 esphome:
   name: ${devicename}
-  platform: ESP32
-  board: esp32doit-devkit-v1

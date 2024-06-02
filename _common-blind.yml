@@ -16,12 +16,14 @@
 # 5) Job Done
 
 # Button is also used to open/close the blind (must be fully open/closed first)
+<<: !include _common-esphome.yml
+esp8266:
+  board: d1_mini
+  restore_from_flash: true
 
 esphome:
-  name: $devicename
-  platform: ESP8266
-  board: d1_mini
-  esp8266_restore_from_flash: true
+  name: ${devicename}
+  friendly_name: ${upper_devicename}
   on_boot:
     - priority: -200.0
       then:
@@ -103,33 +105,33 @@ binary_sensor:
     name: Button
     internal: true
     on_click:
-    - min_length: 50ms
-      max_length: 500ms
-      then: # Short press to OPEN/CLOSE blinds and also for setting up
-        - if: # If settings variable is on
-            condition:
-              - lambda: 'return id(settingmode) != 0;'
-            then: # Enter Setting Mode
-              - script.execute: setupbutton
-            else:
-              - if: # If blind is closed
-                  condition:
-                    - lambda: 'return id(openclosed) == 0;'
-                  then: # Open blind
-                    - cover.open: blinded
-                  else: # Close blind
-                    - cover.close: blinded
-    - min_length: 1000ms
-      max_length: 3000ms
-      then: # Long press to Enter Setting Mode
-        - logger.log: "Entered Settings Mode"
-        - globals.set:
-            id: settingmode
-            value: '1'
+      - min_length: 50ms
+        max_length: 500ms
+        then: # Short press to OPEN/CLOSE blinds and also for setting up
+          - if: # If settings variable is on
+              condition:
+                - lambda: 'return id(settingmode) != 0;'
+              then: # Enter Setting Mode
+                - script.execute: setupbutton
+              else:
+                - if: # If blind is closed
+                    condition:
+                      - lambda: 'return id(openclosed) == 0;'
+                    then: # Open blind
+                      - cover.open: blinded
+                    else: # Close blind
+                      - cover.close: blinded
+      - min_length: 1000ms
+        max_length: 3000ms
+        then: # Long press to Enter Setting Mode
+          - logger.log: "Entered Settings Mode"
+          - globals.set:
+              id: settingmode
+              value: '1'
 
 switch:
   - platform: template
-    name: ${upper_devicename} Setup Switch # Switch to enter Setup Mode
+    name: Setup Switch # Switch to enter Setup Mode
     id: setupswitch
     lambda: |-
       if (id(settingmode) != 0) {
@@ -150,7 +152,7 @@ switch:
             id: settingmode
             value: '0'
   - platform: template
-    name: ${upper_devicename} Setup Button # Switch to replicate the Physical Button
+    name: Setup Button # Switch to replicate the Physical Button
     id: hasetup
     turn_on_action:
       - if: # If settings variable is on
@@ -162,8 +164,10 @@ switch:
 
 cover:
   - platform: template
-    name: $upper_devicename
+    name: false  # let it take the friendly_name to avoid double_entitynames in HA
     id: blinded
+    has_position: true
+    device_class: blind
     open_action:
       then:
         - logger.log: "Opening"
@@ -273,8 +277,6 @@ cover:
             id: blinded
             position: !lambda 'return (float(float(id($mystepper).current_position) / float(id(endstop))));'
             current_operation: IDLE
-    has_position: true
-    device_class: blind
 
 script:
   - id: setupbutton
