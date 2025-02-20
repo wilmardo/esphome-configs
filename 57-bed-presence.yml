@@ -1,4 +1,6 @@
-<<: !include _common-esp8266.yml
+<<: !include _common-esphome.yml
+esp8266:
+  board: d1_mini
 
 # Enable wifi with static ip
 wifi:

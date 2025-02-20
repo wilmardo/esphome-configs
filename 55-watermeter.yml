@@ -1,5 +1,8 @@
 ---
-<<: !include _common-esp32.yml
+<<: !include _common-esphome.yml
+esp32:
+  board: esp32doit-devkit-v1
+
 
 substitutions:
   devicename: watermeter

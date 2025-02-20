@@ -1,14 +1,13 @@
 ---
-<<: !include _common-esp8266.yml
 <<: !include _common-blind.yml
 
 substitutions:
   wifi_ip: 192.168.1.53
-  devicename: bedroom_blind
+  devicename: bedroom-blind
   upper_devicename: Bedroom Blind
   mystepper: my_stepper  # Name of the stepper motor (leave as is)
-  speed: 1500 steps/s  # Set the speed of the motor
-  inverted: "true"  # Invert when motor on left side of blinds
+  speed: 1000 steps/s  # Set the speed of the motor
+  inverted: "false"  # Invert when motor on left side of blinds
   reportin: "0" # Set if you want the blind to report position while moving (causes delay)
 
 # Disable status LED

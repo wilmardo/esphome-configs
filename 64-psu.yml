@@ -1,0 +1,114 @@
+<<: !include _common-esphome.yml
+esp32:
+  board: esp32doit-devkit-v1
+
+
+substitutions:
+  devicename: psu
+  wifi_ip: 192.168.1.62
+
+i2c:
+  sda: GPIO21  # D21
+  scl: GPIO22  # D22
+  scan: true
+
+sensor:
+  - platform: ina3221
+    address: 0x40  # to GND
+    update_interval: 60s
+    channel_1:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 1 Power"
+    channel_2:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 2 Power"
+    channel_3:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 3 Power"
+  - platform: ina3221
+    address: 0x41  # to VS
+    update_interval: 60s
+    channel_1:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 4 Power"
+    channel_2:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 5 Power"
+    channel_3:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 6 Power"
+  - platform: ina3221
+    address: 0x42  # to SDA
+    update_interval: 60s
+    channel_1:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 7 Power"
+    channel_2:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 8 Power"
+    channel_3:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 9 Power"
+  - platform: ina3221
+    address: 0x43  # to SCL
+    update_interval: 60s
+    channel_1:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 10 Power"
+    channel_2:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 2 Power"
+    channel_3:
+      shunt_resistance: 0.05 ohm
+      power:
+        name: "INA3221 Channel 3 Power"
+
+# https://www.mischianti.org/wp-content/uploads/2020/11/ESP32-DOIT-DEV-KIT-v1-pinout-mischianti.png
+switch:
+  # left side
+  - platform: gpio
+    pin: GPIO13
+    name: "Living Room Dehumidifier"
+  # GPIO12 is strapping
+  - platform: gpio
+    pin: GPIO14
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO27
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO26
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO25
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO33
+    name: "Living Room Dehumidifier"
+  # GPIO 34-39 are input only
+
+  # right side
+  # GPIO 15,02,04 strapping pins
+  - platform: gpio
+    pin: GPIO16
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO17
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO5
+    name: "Living Room Dehumidifier"
+  - platform: gpio
+    pin: GPIO18
+    name: "Living Room Dehumidifier"

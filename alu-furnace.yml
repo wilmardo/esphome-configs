@@ -1,0 +1,61 @@
+---
+<<: !include _common-esphome.yml
+esp8266:
+  board: d1_mini
+
+substitutions:
+  wifi_ip: 192.168.1.x
+  devicename: alu-furnace
+  upper_devicename: Aluminium Furnace
+
+# For the MAX6675
+spi:
+  miso_pin: D0
+  clk_pin: D1
+
+# MAX6675 temperature sensor
+sensor:
+  - platform: max6675
+    id: temperature_sensor
+    name: "Furnace Temperature"
+    cs_pin: D2
+    # as recommended in the 'Note:' here:
+    # https://esphome.io/components/climate/pid.html#pid-controller-setup
+    update_interval: 5s
+    # https://esphome.io/components/sensor/index.html#sensor-filters
+    filters:
+      - sliding_window_moving_average:
+
+# Heater SSR on/off pin
+output:
+  - platform: slow_pwm
+    pin: D1
+    id: heater
+    period: 60s
+
+# Button to start autotune
+button:
+  - platform: template
+    name: "PID Furnace Autotune"
+    on_press:
+      - climate.pid.autotune: pid_furnace
+
+# PID logic bringing the temperature and heater together
+climate:
+  - platform: pid
+    id: pid_furnace
+    name: "PID Furnace Controller"
+    sensor: temperature_sensor
+    default_target_temperature: 21°C
+    heat_output: heater
+    # TODO: autotune these values
+    # https://esphome.io/components/climate/pid.html#autotuning
+    control_parameters:
+      kp: 0.0
+      ki: 0.0
+      kd: 0.0
+      output_averaging_samples: 5      # smooth the output over 5 samples
+      derivative_averaging_samples: 5  # smooth the derivative value over 10 samples
+    deadband_parameters:
+      threshold_high: 5°C       # deadband within +/-5°C of target_temperature
+      threshold_low: -5°C

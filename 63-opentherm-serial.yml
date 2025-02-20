@@ -1,4 +1,6 @@
-<<: !include _common-esp8266.yml
+<<: !include _common-esphome.yml
+esp8266:
+  board: d1_mini
 
 substitutions:
   devicename: opentherm-serial

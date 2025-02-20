@@ -1,6 +1,6 @@
 # esphome-configs
 
-My home automation things based on Esphomet
+My home automation things based on Esphome
 
 ## Blinds
 
