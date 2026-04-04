@@ -1,8 +1,9 @@
+---
 packages:
   - !include _common-esphome.yml
 
 esp8266:
-  board: d1_mini
+  board: esp12e
 
 esphome:
   name: litterbox
