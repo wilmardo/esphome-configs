@@ -1,0 +1,62 @@
+---
+packages:
+  - !include _common-esphome.yml
+
+esp32:
+  variant: esp32c3
+  # recommended for the s2/s3 module
+  # https://esphome.io/components/esp32.html#esp32-espidf-framework
+  framework:
+    type: esp-idf
+
+esphome:
+  name: desk
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.54
+  output_power: 8.5
+
+switch:
+  - platform: gpio
+    name: Up
+    id: up
+    icon: mdi:chevron-up-box
+    pin: GPIO20
+    # turn off when reached highest position
+    on_turn_on:
+      - delay: 10s
+      - switch.turn_off: up
+  - platform: gpio
+    name: Down
+    id: down
+    icon: mdi:chevron-down-box
+    pin: GPIO21
+    # turn off when reached lowest position
+    on_turn_on:
+      - delay: 10s
+      - switch.turn_off: down
+  - platform: gpio
+    name: Position 1
+    id: p1
+    icon: mdi:numeric-1-circle
+    pin: GPIO0
+    on_turn_on:
+      - delay: 1s
+      - switch.turn_off: p1
+  - platform: gpio
+    name: Position 2
+    id: p2
+    icon: mdi:numeric-2-circle
+    pin: GPIO1
+    on_turn_on:
+      - delay: 1s
+      - switch.turn_off: p2
+  - platform: gpio
+    name: Position 3
+    id: p3
+    icon: mdi:numeric-3-circle
+    pin: GPIO2
+    on_turn_on:
+      - delay: 1s
+      - switch.turn_off: p3

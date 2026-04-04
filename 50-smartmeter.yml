@@ -1,11 +1,16 @@
 ---
-<<: !include _common-esphome.yml
+packages:
+  - !include _common-esphome.yml
+
 esp8266:
   board: d1_mini
 
-substitutions:
-  devicename: smartmeter
-  wifi_ip: 192.168.1.50
+esphome:
+  name: smartmeter
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.50
 
 uart:
   id: uart_bus

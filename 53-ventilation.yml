@@ -1,0 +1,84 @@
+---
+packages:
+  - !include _common-esphome.yml
+
+esp32:
+  variant: esp32s3
+  board: lolin_s3_mini
+  # recommended for the s2/s3 module
+  # https://esphome.io/components/esp32.html#esp32-espidf-framework
+  framework:
+    type: esp-idf
+
+esphome:
+  name: ventilation
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.55
+
+i2c:
+  sda: 35
+  scl: 36
+
+sensor:
+  - platform: am2315c
+    temperature:
+      name: Ventilation air temperature
+      id: ventilation_air_temperature
+    humidity:
+      name: Ventilation air humidity
+      id: ventilation_air_humidity
+
+# see docs/ventilation-schema.jpg
+output:
+  - platform: ledc
+    id: fan_output
+    internal: true
+    inverted: true
+    pin:
+      number: 37
+      mode:
+        pullup: true
+    frequency: 2000 Hz
+
+fan:
+  - platform: speed
+    name: Ventilation Fan
+    id: ventilation_fan
+    output: fan_output
+    restore_mode: ALWAYS_ON
+    speed_count: 5  # 5 speedmodes
+
+# Increase fan speed when to much humidity
+# use interval to avoid hysteris when doing it in the sensor automation
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          auto call = id(ventilation_fan).turn_on();
+          if(id(ventilation_air_humidity).state >= 75) {
+            call.set_speed(5);
+          else if(id(ventilation_air_humidity).state >= 65) {
+            call.set_speed(4);
+          }
+          else if(id(ventilation_air_humidity).state >= 60) {
+            call.set_speed(3);
+          } else {
+            call.set_speed(2);
+          }
+          call.perform();
+
+# Timer function
+globals:
+  - id: my_global_int
+    type: bool
+    restore_value: false
+    initial_value: true
+button:
+  - platform: template
+    name: Ventilation timer
+    on_press:
+      - globals.set:
+          id: my_global_var
+          value: '10'

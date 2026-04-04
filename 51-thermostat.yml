@@ -1,0 +1,108 @@
+---
+packages:
+  - !include _common-esphome.yml
+
+esp32:
+  variant: esp32s3
+  board: lolin_s3_mini
+  # recommended for the s2/s3 module
+  # https://esphome.io/components/esp32.html#esp32-espidf-framework
+  framework:
+    type: esp-idf
+
+esphome:
+  name: thermostat
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.51
+
+logger:
+  level: DEBUG
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 300ms
+    window: 300ms
+    active: false
+
+# 1 wire bus for tempprobes
+# wire 4.7K resistor between 3.3V and GPIO as pullup
+one_wire:
+  - platform: gpio
+    pin: 16
+
+sensor:
+  # Livingroom temperature
+  - platform: xiaomi_mhoc401
+    mac_address: A4:C1:38:37:DD:79
+    bindkey: 1a75368a64bdfa09b55a5042271d4a07
+    temperature:
+      name: Livingroom temperature
+      id: livingroom_temperature
+    humidity:
+      name: Livingroom humidity
+      id: livingroom_humidity
+    battery_level:
+      name: Livingroom battery level
+  - platform: template
+    name: Livingroom dew point
+    id: livingroom_dew_point
+    unit_of_measurement: °C
+    # dew point calc from https://iridl.ldeo.columbia.edu/dochelp/QA/Basic/dewpoint.html
+    # Td = T - (100 - RH)/5
+    lambda: |-
+      return id(livingroom_temperature).state - ((100 - id(livingroom_humidity).state)/5);
+    update_interval: 30s
+  # Heating water temperature sensors
+  - platform: dallas_temp
+    address: 0x900000005669fa28
+    name: Underfloor heating feed water temperature
+    id: feed_water_temperature
+    unit_of_measurement: °C
+    update_interval: 10s
+# Close the floor_heating when the water temperature goes below dew point
+interval:
+  - interval: 120s
+    then:
+      - lambda: |-
+          if(id(feed_water_temperature).state <= id(livingroom_dew_point).state) {
+            id(underfloor_heating_valve).turn_off();
+          } else {
+            id(underfloor_heating_valve).turn_on();
+          }
+
+# https://community.home-assistant.io/t/esphome-starting-parameters-pid-controller-underfloor-heating/525267/4
+climate:
+  - platform: thermostat
+    name: Thermostat
+    sensor: livingroom_temperature
+    min_cooling_off_time: 300s
+    min_cooling_run_time: 300s
+    min_heating_off_time: 300s
+    min_heating_run_time: 300s
+    min_idle_time: 30s
+    heat_action:
+      - switch.turn_on: heat
+    idle_action:
+      - switch.turn_off: heat
+      - switch.turn_off: cool
+    cool_action:
+      - switch.turn_on: cool
+    preset:
+      - name: Home
+        default_target_temperature_low: 20 °C
+        default_target_temperature_high: 22 °C
+
+# Heatpump on/off
+switch:
+  - platform: gpio
+    id: heat
+    pin: 4
+  - platform: gpio
+    id: cool
+    pin: 6
+  # servo
+  - platform: gpio
+    id: underfloor_heating_valve
+    pin: 5

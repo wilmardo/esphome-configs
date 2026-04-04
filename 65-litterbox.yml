@@ -1,10 +1,15 @@
-<<: !include _common-esphome.yml
+packages:
+  - !include _common-esphome.yml
+
 esp8266:
   board: d1_mini
 
-substitutions:
-  devicename: litterbox
-  wifi_ip: 192.168.1.65
+esphome:
+  name: litterbox
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.65
 
 tuya:
 
@@ -58,8 +63,8 @@ switch:
       - delay: !lambda "return id(idIntervalBetweenCleaning).state*60000;"
       #After a delay, we send it to a global variable for "Was there MyAutoCleaning?" status false. Thus, if the pet enters and leaves, the next cleaning will start
       - globals.set:
-         id: idCleaningLastTimeGlobal
-         value: 'false'
+          id: idCleaningLastTimeGlobal
+          value: 'false'
 
   - platform: "tuya"
     name: "AutoCleaning"
@@ -206,6 +211,9 @@ sensor:
     id: idCatWeight
     unit_of_measurement: g
     sensor_datapoint: 6
+    # needed for long term statistic storage
+    device_class: weight
+    state_class: measurement
 
   - platform: "tuya"
     name: "Visit Time Second"
@@ -302,8 +310,8 @@ binary_sensor:
                   #Condition: Cleaning completed
                   - lambda: 'return id(idCleaning).state == false and id(idUptime).state > 60;'
                 then:
-                   #The "Cleaning is finished" script has delays and in order to re-run the script, you must first stop the script and then re-run it
-                   #Action: Stop the "Cleaning Complete" script
+                  #The "Cleaning is finished" script has delays and in order to re-run the script, you must first stop the script and then re-run it
+                  #Action: Stop the "Cleaning Complete" script
                   - script.stop: idCleaningFinishedScript
                   #Action: Run the "Cleaning Complete" script
                   - script.execute: idCleaningFinishedScript
@@ -427,7 +435,7 @@ binary_sensor:
                         - if:
                             condition:
                               #Condition: Additional verification. If after the delay the conditions are correct, then start cleaning
-                              - lambda: 'return id(idCleaning).state == false and id(idMyAutoCleaning).state == true and id(idCleaningLastTimeGlobal) == false and id(idCatWeight).state >= id(idMinimumPetWeight).state;' 
+                              - lambda: 'return id(idCleaning).state == false and id(idMyAutoCleaning).state == true and id(idCleaningLastTimeGlobal) == false and id(idCatWeight).state >= id(idMinimumPetWeight).state;'
                             then:
                               #Action: Turn off the ionizer
                               - switch.turn_off: idIonizer

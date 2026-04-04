@@ -1,0 +1,30 @@
+---
+packages:
+  - !include _common-esphome.yml
+
+esp32:
+  board: lolin_s2_mini
+  framework:
+    type: esp-idf
+
+esphome:
+  name: zigbee-serial
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.52
+
+external_components:
+  - source: github://oxan/esphome-stream-server
+
+uart:
+  id: uart_bus
+  tx_pin: 43  # TX on D1 mini
+  rx_pin: 44  # RX on D1 mini
+  baud_rate: 115200
+  rx_buffer_size: &buffer 8192
+
+stream_server:
+  uart_id: uart_bus
+  port: 23
+  buffer_size: *buffer

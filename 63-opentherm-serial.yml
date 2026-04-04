@@ -1,10 +1,15 @@
-<<: !include _common-esphome.yml
-esp8266:
-  board: d1_mini
+packages:
+  - !include _common-esphome.yml
 
-substitutions:
-  devicename: opentherm-serial
-  wifi_ip: 192.168.1.63
+esp8266:
+  board: esp07
+
+esphome:
+  name: opentherm-serial
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.63
 
 external_components:
   - source: github://oxan/esphome-stream-server

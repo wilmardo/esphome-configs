@@ -1,0 +1,97 @@
+---
+packages:
+  - !include _common-esphome.yml
+
+esp32:
+  board: lolin_s2_mini
+
+esphome:
+  name: smartmeter
+
+wifi:
+  manual_ip:
+    static_ip: 192.168.1.50
+
+uart:
+  id: uart_bus
+  tx_pin:
+    pin: 39
+    inverted: true
+  rx_pin:
+    pin: 37
+    inverted: true
+  baud_rate: 115200
+  rx_buffer_size: &buffer_size 1700
+dsmr:
+  uart_id: uart_bus
+  max_telegram_length: *buffer_size
+
+sensor:
+  # Watermeter
+  - platform: pulse_meter
+    pin:
+      number: 13
+    name: Water Meter
+    unit_of_measurement: m3
+    device_class: water
+    filters:
+      - multiply: 0.006  # 10000/min = 1m3
+    on_value:
+      then:
+        - switch.turn_on: led_water
+        - delay: 100ms
+        - switch.turn_off: led_water
+
+  # Energy P1
+  - platform: dsmr
+    energy_delivered_tariff1:
+      name: Power consumption low
+      on_value:
+        then:
+          - switch.turn_on: led_p1
+          - delay: 100ms
+          - switch.turn_off: led_p1
+    energy_delivered_tariff2:
+      name: Power consumption normal
+      on_value:
+        then:
+          - switch.turn_on: led_p1
+          - delay: 100ms
+          - switch.turn_off: led_p1
+    energy_returned_tariff1:
+      name: Power production low
+    energy_returned_tariff2:
+      name: Power production normal
+    power_returned:
+      name: Actual production
+    power_delivered:
+      name: Actual consumption
+    gas_delivered:
+      name: Gas consumption
+    # TODO: strip once without value
+    current_l1:
+      name: Current L1
+    current_l2:
+      name: Current L2
+    current_l3:
+      name: Current L3
+    power_delivered_l1:
+      name: Power consumption L1
+    power_delivered_l2:
+      name: Power consumption L2
+    power_delivered_l3:
+      name: Power consumption L3
+    power_returned_l1:
+      name: Power production L1
+    power_returned_l2:
+      name: Power production L2
+    power_returned_l3:
+      name: Power production L3
+
+switch:
+  - platform: gpio
+    pin: 7
+    id: led_p1
+  - platform: gpio
+    pin: 8
+    id: led_water
